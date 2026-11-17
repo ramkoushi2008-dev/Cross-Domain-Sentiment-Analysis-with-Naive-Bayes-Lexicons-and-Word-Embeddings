@@ -1,0 +1,10 @@
+domain,role,raw_pos,raw_neg,used,used_pos,mean_tokens,median_tokens,vocab
+imdb_train,train,12500,12500,20000,10000,267.4,200.0,87318
+imdb_val,validation,12500,12500,5000,2500,269.7,200.0,45970
+imdb_test,test (in-domain),12500,12500,25000,12500,262.0,198.0,95779
+amazon_books,test (cross-domain),1000,1000,2000,1000,197.9,127.5,24500
+amazon_dvd,test (cross-domain),1000,1000,2000,1000,193.3,126.0,23940
+amazon_electronics,test (cross-domain),1000,1000,2000,1000,125.2,89.0,12289
+amazon_kitchen,test (cross-domain),1000,1000,2000,1000,104.5,77.0,10351
+yelp,test (cross-domain),19000,19000,2000,1000,162.5,115.0,15684
+finphrase,test (cross-domain),1363,604,1208,604,26.5,25.0,4179

@@ -59,9 +59,19 @@ def extract(archive, out_dir):
 
 def get_imdb():
     out = os.path.join(RAW, "imdb")
-    if os.path.isdir(os.path.join(out, "aclImdb")):
-        print("  IMDB already extracted"); return
-    extract(fetch(IMDB_URL, os.path.join(RAW, "archives", "aclImdb_v1.tar.gz")), out)
+    if os.path.isdir(os.path.join(out, "aclImdb")) or os.path.exists(os.path.join(out, "test.csv")):
+        print("  IMDB already downloaded"); return
+    try:
+        extract(fetch(IMDB_URL, os.path.join(RAW, "archives", "aclImdb_v1.tar.gz")), out)
+    except requests.RequestException as e:
+        # ai.stanford.edu is unreachable from some networks; the Hugging Face copy
+        # (stanfordnlp/imdb) holds the same 25k/25k labeled reviews.
+        print(f"  Stanford server failed ({e.__class__.__name__}); using HF mirror stanfordnlp/imdb")
+        from datasets import load_dataset
+        os.makedirs(out, exist_ok=True)
+        for split in ("train", "test"):
+            load_dataset("stanfordnlp/imdb", split=split).to_pandas().to_csv(
+                os.path.join(out, f"{split}.csv"), index=False)
 
 
 def get_blitzer():
@@ -75,7 +85,15 @@ def get_drugs():
     out = os.path.join(RAW, "drugs")
     if os.path.exists(os.path.join(out, "drugsComTest_raw.tsv")):
         print("  Drug reviews already extracted"); return
-    extract(fetch(DRUGS_URL, os.path.join(RAW, "archives", "drugs.zip")), out)
+    try:
+        extract(fetch(DRUGS_URL, os.path.join(RAW, "archives", "drugs.zip")), out)
+    except requests.HTTPError as e:
+        # As of Nov 2026 UCI has withdrawn dataset 462 from public download. Its terms
+        # forbid redistribution, so unofficial mirrors are not used; if you obtain the
+        # files from the authors, place drugsComTest_raw.tsv in data/raw/drugs/.
+        raise RuntimeError("Drugs.com dataset is no longer publicly downloadable from UCI "
+                           "(dataset 462 withdrawn); place drugsComTest_raw.tsv in "
+                           "data/raw/drugs/ by hand") from e
     # Some versions of the UCI archive contain a nested zip.
     for name in os.listdir(out):
         if name.endswith(".zip"):
