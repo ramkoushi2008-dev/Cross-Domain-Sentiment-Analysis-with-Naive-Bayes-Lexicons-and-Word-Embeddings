@@ -40,6 +40,21 @@ def load_imdb(split):
     return docs
 
 
+def load_review_polarity():
+    """Pang & Lee (2004) polarity dataset v2.0: 1,000 pos + 1,000 neg pre-tokenized reviews.
+
+    Used only to check that the ported classifier reproduces the Assignment 3 result.
+    Order matches the homework loader (pos files, then neg, each sorted by name).
+    """
+    base = os.path.join(RAW, "review_polarity", "txt_sentoken")
+    docs = []
+    for name, label in (("pos", POS), ("neg", NEG)):
+        for path in sorted(glob.glob(os.path.join(base, name, "*.txt"))):
+            with open(path, encoding="utf-8") as f:
+                docs.append((f.read(), label))
+    return docs
+
+
 def train_val_split(docs, n_val=5000, seed=42):
     """Stratified hold-out: n_val documents (half per class) become the validation set.
 

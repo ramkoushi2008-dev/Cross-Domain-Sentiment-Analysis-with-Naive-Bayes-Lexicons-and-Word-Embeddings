@@ -24,6 +24,7 @@ RAW = os.path.join(ROOT, "data", "raw")
 IMDB_URL = "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz"
 BLITZER_URL = "https://www.cs.jhu.edu/~mdredze/datasets/sentiment/domain_sentiment_data.tar.gz"
 DRUGS_URL = "https://archive.ics.uci.edu/static/public/462/drug+review+dataset+drugs+com.zip"
+POLARITY_URL = "https://www.cs.cornell.edu/people/pabo/movie-review-data/review_polarity.tar.gz"
 FINPHRASE_URL = ("https://huggingface.co/datasets/takala/financial_phrasebank/"
                  "resolve/main/data/FinancialPhraseBank-v1.0.zip")
 
@@ -72,6 +73,14 @@ def get_imdb():
         for split in ("train", "test"):
             load_dataset("stanfordnlp/imdb", split=split).to_pandas().to_csv(
                 os.path.join(out, f"{split}.csv"), index=False)
+
+
+def get_review_polarity():
+    """Pang & Lee polarity dataset v2.0, used only to check the homework reproduction."""
+    out = os.path.join(RAW, "review_polarity")
+    if os.path.isdir(os.path.join(out, "txt_sentoken")):
+        print("  review_polarity already extracted"); return
+    extract(fetch(POLARITY_URL, os.path.join(RAW, "archives", "review_polarity.tar.gz")), out)
 
 
 def get_blitzer():
@@ -143,6 +152,7 @@ def check_mpqa():
 
 RESOURCES = {
     "imdb": get_imdb,
+    "review_polarity": get_review_polarity,
     "blitzer": get_blitzer,
     "yelp": get_yelp,
     "drugs": get_drugs,

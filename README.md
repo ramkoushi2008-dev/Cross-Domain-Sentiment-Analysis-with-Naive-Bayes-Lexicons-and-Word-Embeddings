@@ -35,6 +35,7 @@ pip install -r requirements.txt
 
 ```bash
 python scripts/download_data.py      # fetch all datasets into data/raw/
+python scripts/reproduce_homework.py # check against Assignment 3 -> results/homework_reproduction.json
 python scripts/dataset_stats.py      # sizes, class balance, text length -> results/dataset_stats.csv
 python scripts/run_baseline.py       # IMDB baseline -> results/baseline_imdb.json
 python tests/test_core.py            # unit tests
@@ -49,6 +50,7 @@ research.
 | Resource | License / terms | Source |
 |---|---|---|
 | IMDB Large Movie Review Dataset (Maas et al., 2011) | Free for research with citation | ai.stanford.edu/~amaas/data/sentiment (mirror: HF `stanfordnlp/imdb`) |
+| Polarity dataset v2.0 (Pang & Lee, 2004), homework check only | Free for research with citation | cs.cornell.edu/people/pabo/movie-review-data |
 | Multi-Domain Sentiment Dataset (Blitzer et al., 2007) | Free for research; cite ACL 2007 | cs.jhu.edu/~mdredze/datasets/sentiment |
 | Yelp Review Polarity (Zhang et al., 2015) | Yelp dataset terms, non-commercial academic use | HF `fancyzhx/yelp_polarity` |
 | Drug Review Dataset, Drugs.com (Gräßer et al., 2018) | CC BY 4.0; research only, no redistribution | UCI ML Repository, dataset 462 |
@@ -66,39 +68,57 @@ must be placed in `data/raw/mpqa/` by hand after the request form.
 
 ## Progress
 
-- [x] Week 1 – download scripts, preprocessing, validation split, IMDB baseline
+- [x] Week 1 – download scripts, preprocessing, validation split, homework reproduction, IMDB baseline
+- [ ] Week 2 – Hu & Liu and MPQA lexicon features, GloVe-expanded lexicon
+- [ ] Week 3 – negation methods, IMDB ablation, cross-domain tests
+- [ ] Week 4 – domain distances, word polarities, confidence intervals, significance tests
+- [ ] Week 5 – error analysis, agreement check, report
 
 ## Results so far
+
+### Homework reproduction (`results/homework_reproduction.json`)
+
+The project classifier was checked against the Assignment 3 result on the Pang & Lee
+polarity dataset, using the same 80/20 stratified split (seed 42) and whitespace tokens.
+
+| Setting | Accuracy | Vocabulary |
+|---|---|---|
+| Assignment 3, variant i (reported) | 0.8375 | 45,621 |
+| Project code, whitespace tokens | 0.8375 | 45,621 (exact match) |
+| Project code, project tokenizer | 0.8375 | 42,854 |
 
 ### Datasets after preprocessing (`results/dataset_stats.csv`)
 
 | Domain | Raw pos / neg | Used (balanced) | Mean tokens |
 |---|---|---|---|
-| IMDB train | 12,500 / 12,500 | 20,000 | 267 |
+| IMDB train | 12,500 / 12,500 | 20,000 | 268 |
 | IMDB validation | (held out from train) | 5,000 | 270 |
 | IMDB test | 12,500 / 12,500 | 25,000 | 262 |
 | Amazon books | 1,000 / 1,000 | 2,000 | 198 |
-| Amazon DVD | 1,000 / 1,000 | 2,000 | 193 |
+| Amazon DVD | 1,000 / 1,000 | 2,000 | 194 |
 | Amazon electronics | 1,000 / 1,000 | 2,000 | 125 |
 | Amazon kitchen | 1,000 / 1,000 | 2,000 | 105 |
 | Yelp | 19,000 / 19,000 | 2,000 | 163 |
-| Financial PhraseBank (50% agree) | 1,363 / 604 | 1,208 | 27 |
+| Financial PhraseBank (50% agree) | 1,363 / 604 | 1,208 | 25 |
 
 ### Baseline: multinomial NB, unigram counts, add-one smoothing (`results/baseline_imdb.json`)
 
 | IMDB split | Accuracy | Macro F1 | P / R (pos) | P / R (neg) |
 |---|---|---|---|---|
-| Validation (5,000) | 0.834 | 0.834 | 0.862 / 0.795 | 0.810 / 0.873 |
-| Test (25,000) | 0.809 | 0.808 | 0.855 / 0.745 | 0.774 / 0.873 |
+| Validation (5,000) | 0.8346 | 0.8343 | 0.864 / 0.795 | 0.810 / 0.874 |
+| Test (25,000) | 0.8085 | 0.8077 | 0.855 / 0.743 | 0.773 / 0.874 |
 
-The baseline over-predicts the negative class (recall 0.87 vs 0.75). Its most polar words
+The baseline over-predicts the negative class (recall 0.87 vs 0.74). Its most polar words
 (`results/baseline_top_features.csv`) are mostly names (e.g. *seagal*, *boll* negative;
 *paulie*, *edie* positive): movie-specific vocabulary that cannot transfer to other
 domains, which motivates the lexicon features of Week 2.
-- [ ] Week 2 – Hu & Liu and MPQA lexicon features, GloVe-expanded lexicon
-- [ ] Week 3 – negation methods, IMDB ablation, cross-domain tests
-- [ ] Week 4 – domain distances, word polarities, confidence intervals, significance tests
-- [ ] Week 5 – error analysis, agreement check, report
+
+### Preprocessing notes
+
+Real HTML tags (`<br />`, `<i>`, `<hr>`) are removed, but emoticons such as `>.<` and
+`</3` are kept as text because they carry sentiment. Accented letters stay inside words
+(*café*), decimals stay whole (*9.99*), and Windows-1252 dashes and quotes that survive as
+control characters in some IMDB reviews are normalised to ASCII.
 
 ## References
 
@@ -120,6 +140,7 @@ domains, which motivates the lexicon features of Week 2.
 - McKinney, W. (2010). Data Structures for Statistical Computing in Python. *Proceedings of the 9th Python in Science Conference*, 56–61.
 - McNemar, Q. (1947). Note on the Sampling Error of the Difference between Correlated Proportions or Percentages. *Psychometrika*, 12(2), 153–157.
 - Pan, S. J., Ni, X., Sun, J.-T., Yang, Q., & Chen, Z. (2010). Cross-Domain Sentiment Classification via Spectral Feature Alignment. *Proceedings of WWW 2010*, 751–760.
+- Pang, B., & Lee, L. (2004). A Sentimental Education: Sentiment Analysis Using Subjectivity Summarization Based on Minimum Cuts. *Proceedings of ACL 2004*, 271–278.
 - Pang, B., & Lee, L. (2008). Opinion Mining and Sentiment Analysis. *Foundations and Trends in Information Retrieval*, 2(1–2), 1–135.
 - Pang, B., Lee, L., & Vaithyanathan, S. (2002). Thumbs up? Sentiment Classification using Machine Learning Techniques. *Proceedings of EMNLP 2002*, 79–86.
 - Pedregosa, F., et al. (2011). Scikit-learn: Machine Learning in Python. *JMLR*, 12, 2825–2830.

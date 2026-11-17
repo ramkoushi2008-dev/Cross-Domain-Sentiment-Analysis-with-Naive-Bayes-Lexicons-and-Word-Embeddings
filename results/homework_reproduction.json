@@ -1,0 +1,60 @@
+{
+  "dataset": "Pang & Lee polarity v2.0, 80/20 stratified split, seed 42",
+  "assignment3_reported": {
+    "accuracy": 0.8375,
+    "vocab_size": 45621
+  },
+  "whitespace_tokens": {
+    "vocab_size": 45621,
+    "n": 400,
+    "accuracy": 0.8375,
+    "pos": {
+      "precision": 0.8260869565217391,
+      "recall": 0.855,
+      "f1": 0.8402948402948403
+    },
+    "neg": {
+      "precision": 0.8497409326424871,
+      "recall": 0.82,
+      "f1": 0.8346055979643766
+    },
+    "macro_f1": 0.8374502191296085,
+    "confusion": [
+      [
+        164,
+        36
+      ],
+      [
+        29,
+        171
+      ]
+    ]
+  },
+  "project_tokenizer": {
+    "vocab_size": 42854,
+    "n": 400,
+    "accuracy": 0.8375,
+    "pos": {
+      "precision": 0.8292682926829268,
+      "recall": 0.85,
+      "f1": 0.8395061728395061
+    },
+    "neg": {
+      "precision": 0.8461538461538461,
+      "recall": 0.825,
+      "f1": 0.8354430379746836
+    },
+    "macro_f1": 0.8374746054070948,
+    "confusion": [
+      [
+        165,
+        35
+      ],
+      [
+        30,
+        170
+      ]
+    ]
+  },
+  "exact_match": true
+}

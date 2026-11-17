@@ -1,0 +1,4 @@
+# Normalise line endings so commits are identical on Windows and Linux
+* text=auto eol=lf
+*.png binary
+*.pdf binary

@@ -21,6 +21,18 @@ def test_tokenize_keeps_negation_and_strips_html():
     assert tokenize("a &amp; b") == ["a", "&", "b"]
 
 
+def test_tokenize_edge_cases():
+    # real tags removed, emoticons kept
+    assert tokenize("see <i>Boomerang</i>.<hr>Yuck >.< </3") == \
+        ["see", "boomerang", ".", "yuck", ">", ".", "<", "<", "/", "3"]
+    # accented letters stay inside words; decimals stay whole
+    assert tokenize("Café Señor costs $9.99") == ["café", "señor", "costs", "$", "9.99"]
+    # Windows-1252 dashes/quotes and typographic apostrophes normalised
+    assert tokenize("good\x96really \x93fun\x94 shouldn’t") == \
+        ["good", "-", "really", '"', "fun", '"', "should", "n't"]
+    assert tokenize("well-made, must_see") == ["well-made", ",", "must", "_", "see"]
+
+
 def test_train_val_split_is_stratified_and_disjoint():
     docs = [(f"d{i}", i % 2) for i in range(100)]
     train, val = train_val_split(docs, n_val=20, seed=0)
