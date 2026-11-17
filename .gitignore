@@ -1,0 +1,19 @@
+# Raw datasets and embeddings are never committed (see README, "Data and licenses")
+data/raw/
+data/processed/
+*.tar.gz
+*.zip
+glove*.txt
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
