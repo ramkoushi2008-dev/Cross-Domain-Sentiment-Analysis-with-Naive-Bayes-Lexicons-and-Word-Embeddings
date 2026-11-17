@@ -31,6 +31,15 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+## Usage
+
+```bash
+python scripts/download_data.py      # fetch all datasets into data/raw/
+python scripts/dataset_stats.py      # sizes, class balance, text length -> results/dataset_stats.csv
+python scripts/run_baseline.py       # IMDB baseline -> results/baseline_imdb.json
+python tests/test_core.py            # unit tests
+```
+
 ## Data and licenses
 
 Raw data is never committed to this repository; the download script fetches every
@@ -48,9 +57,44 @@ research.
 | MPQA Subjectivity Lexicon (Wilson et al., 2005) | GNU GPL; request form | mpqa.cs.pitt.edu (place file manually, see below) |
 | GloVe 6B, 100d (Pennington et al., 2014) | PDDL 1.0 | nlp.stanford.edu/projects/glove |
 
+**Availability notes (checked 17 Nov 2026).** ai.stanford.edu timed out from our network,
+so the download script falls back to the Hugging Face mirror `stanfordnlp/imdb` (same
+25k/25k labeled reviews). UCI has withdrawn the Drugs.com dataset (id 462) from public
+download; because its terms forbid redistribution, unofficial mirrors are not used, and
+the drug domain is pending until the files are obtained from the authors. The MPQA lexicon
+must be placed in `data/raw/mpqa/` by hand after the request form.
+
 ## Progress
 
-- [ ] Week 1 – download scripts, preprocessing, validation split, IMDB baseline
+- [x] Week 1 – download scripts, preprocessing, validation split, IMDB baseline
+
+## Results so far
+
+### Datasets after preprocessing (`results/dataset_stats.csv`)
+
+| Domain | Raw pos / neg | Used (balanced) | Mean tokens |
+|---|---|---|---|
+| IMDB train | 12,500 / 12,500 | 20,000 | 267 |
+| IMDB validation | (held out from train) | 5,000 | 270 |
+| IMDB test | 12,500 / 12,500 | 25,000 | 262 |
+| Amazon books | 1,000 / 1,000 | 2,000 | 198 |
+| Amazon DVD | 1,000 / 1,000 | 2,000 | 193 |
+| Amazon electronics | 1,000 / 1,000 | 2,000 | 125 |
+| Amazon kitchen | 1,000 / 1,000 | 2,000 | 105 |
+| Yelp | 19,000 / 19,000 | 2,000 | 163 |
+| Financial PhraseBank (50% agree) | 1,363 / 604 | 1,208 | 27 |
+
+### Baseline: multinomial NB, unigram counts, add-one smoothing (`results/baseline_imdb.json`)
+
+| IMDB split | Accuracy | Macro F1 | P / R (pos) | P / R (neg) |
+|---|---|---|---|---|
+| Validation (5,000) | 0.834 | 0.834 | 0.862 / 0.795 | 0.810 / 0.873 |
+| Test (25,000) | 0.809 | 0.808 | 0.855 / 0.745 | 0.774 / 0.873 |
+
+The baseline over-predicts the negative class (recall 0.87 vs 0.75). Its most polar words
+(`results/baseline_top_features.csv`) are mostly names (e.g. *seagal*, *boll* negative;
+*paulie*, *edie* positive): movie-specific vocabulary that cannot transfer to other
+domains, which motivates the lexicon features of Week 2.
 - [ ] Week 2 – Hu & Liu and MPQA lexicon features, GloVe-expanded lexicon
 - [ ] Week 3 – negation methods, IMDB ablation, cross-domain tests
 - [ ] Week 4 – domain distances, word polarities, confidence intervals, significance tests
