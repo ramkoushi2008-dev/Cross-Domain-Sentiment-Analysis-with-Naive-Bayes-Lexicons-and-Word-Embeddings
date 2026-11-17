@@ -77,6 +77,30 @@ def test_report_matches_sklearn():
     assert r["confusion"] == confusion_matrix(y_true, y_pred, labels=[0, 1]).tolist()
 
 
+def test_lexicon_markers_appended_not_replacing():
+    from sentiment.features import lexicon_markers, with_lexicon
+    lex = {"good": 1, "boring": -1, "great": 1}
+    toks = ["a", "good", "but", "boring", "film", ",", "good"]
+    assert lexicon_markers(toks, lex) == ["LEX_POS", "LEX_NEG", "LEX_POS"]
+    assert lexicon_markers(toks, lex, name="HL") == ["HL_POS", "HL_NEG", "HL_POS"]
+    assert with_lexicon(lex)(toks) == toks + ["LEX_POS", "LEX_NEG", "LEX_POS"]
+
+
+def test_hu_liu_lexicon_loads():
+    from sentiment.lexicons import HU_LIU_DIR, load_hu_liu
+    if not os.path.isdir(HU_LIU_DIR):
+        return  # data not downloaded
+    lex = load_hu_liu()
+    assert 6700 < len(lex) < 6800
+    assert lex["good"] == 1 and lex["bad"] == -1 and lex["naïve"] == -1
+
+
+def test_parse_mpqa_line():
+    from sentiment.lexicons import parse_mpqa_line
+    e = parse_mpqa_line("type=strongsubj len=1 word1=abandoned pos1=adj stemmed1=n priorpolarity=negative")
+    assert e["word1"] == "abandoned" and e["priorpolarity"] == "negative"
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

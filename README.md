@@ -38,6 +38,7 @@ python scripts/download_data.py      # fetch all datasets into data/raw/
 python scripts/reproduce_homework.py # check against Assignment 3 -> results/homework_reproduction.json
 python scripts/dataset_stats.py      # sizes, class balance, text length -> results/dataset_stats.csv
 python scripts/run_baseline.py       # IMDB baseline -> results/baseline_imdb.json
+python scripts/run_lexicon_features.py  # + Hu & Liu / MPQA markers -> results/lexicon_features_imdb.json
 python tests/test_core.py            # unit tests
 ```
 
@@ -70,6 +71,9 @@ must be placed in `data/raw/mpqa/` by hand after the request form.
 
 - [x] Week 1 – download scripts, preprocessing, validation split, homework reproduction, IMDB baseline
 - [ ] Week 2 – Hu & Liu and MPQA lexicon features, GloVe-expanded lexicon
+  - [x] Hu & Liu lexicon feature (LEX_POS / LEX_NEG markers), evaluated on IMDB
+  - [x] MPQA loader (runs automatically once the lexicon file is in `data/raw/mpqa/`)
+  - [ ] GloVe-expanded lexicon with margin tuned on validation
 - [ ] Week 3 – negation methods, IMDB ablation, cross-domain tests
 - [ ] Week 4 – domain distances, word polarities, confidence intervals, significance tests
 - [ ] Week 5 – error analysis, agreement check, report
@@ -112,6 +116,26 @@ The baseline over-predicts the negative class (recall 0.87 vs 0.74). Its most po
 (`results/baseline_top_features.csv`) are mostly names (e.g. *seagal*, *boll* negative;
 *paulie*, *edie* positive): movie-specific vocabulary that cannot transfer to other
 domains, which motivates the lexicon features of Week 2.
+
+### Lexicon features on IMDB (`results/lexicon_features_imdb.json`)
+
+Each lexicon word in a review adds a `LEX_POS` or `LEX_NEG` marker token to its bag of
+words; the classifier is unchanged. The Hu & Liu lexicon has 6,783 unambiguous entries
+(2,003 positive, 4,780 negative); its words make up 7.3% of IMDB training tokens and occur
+in 99.96% of reviews.
+
+| Model | Val acc | Test acc | Δ test | P / R (pos) | P / R (neg) |
+|---|---|---|---|---|---|
+| Baseline | 0.8346 | 0.8085 | – | 0.855 / 0.743 | 0.773 / 0.874 |
+| + Hu & Liu | 0.8448 | 0.8232 | +1.47 | 0.862 / 0.769 | 0.792 / 0.877 |
+| + MPQA | pending lexicon file | | | | |
+
+The gain comes mostly from positive recall (0.743 → 0.769), partly correcting the
+baseline's bias toward the negative class. The learned marker weights are moderate
+(log ratio +0.35 for `LEX_POS`, −0.40 for `LEX_NEG`), a likely reason being that many
+lexicon words also occur in reviews of the opposite polarity, for example under negation
+("not good"). Negation handling (Week 3) tests this directly.
+Whether the gains are significant is tested in Week 4 (McNemar).
 
 ### Preprocessing notes
 
