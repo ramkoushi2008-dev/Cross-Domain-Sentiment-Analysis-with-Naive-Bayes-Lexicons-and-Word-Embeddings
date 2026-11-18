@@ -1,0 +1,287 @@
+{
+  "n_candidates": 9023,
+  "median_raw_gap": -0.007558852434158325,
+  "heldout_label_check": [
+    {
+      "margin": 0.0,
+      "n_gold": 623,
+      "labelled": 623,
+      "coverage": 1.0,
+      "accuracy": 0.8940609951845907
+    },
+    {
+      "margin": 0.02,
+      "n_gold": 623,
+      "labelled": 562,
+      "coverage": 0.9020866773675762,
+      "accuracy": 0.9377224199288257
+    },
+    {
+      "margin": 0.04,
+      "n_gold": 623,
+      "labelled": 499,
+      "coverage": 0.8009630818619583,
+      "accuracy": 0.9559118236472945
+    },
+    {
+      "margin": 0.06,
+      "n_gold": 623,
+      "labelled": 412,
+      "coverage": 0.6613162118780096,
+      "accuracy": 0.9878640776699029
+    },
+    {
+      "margin": 0.08,
+      "n_gold": 623,
+      "labelled": 337,
+      "coverage": 0.5409309791332263,
+      "accuracy": 0.9881305637982196
+    },
+    {
+      "margin": 0.1,
+      "n_gold": 623,
+      "labelled": 258,
+      "coverage": 0.41412520064205455,
+      "accuracy": 0.9961240310077519
+    },
+    {
+      "margin": 0.12,
+      "n_gold": 623,
+      "labelled": 192,
+      "coverage": 0.30818619582664525,
+      "accuracy": 0.9947916666666666
+    },
+    {
+      "margin": 0.15,
+      "n_gold": 623,
+      "labelled": 115,
+      "coverage": 0.18459069020866772,
+      "accuracy": 1.0
+    },
+    {
+      "margin": 0.2,
+      "n_gold": 623,
+      "labelled": 50,
+      "coverage": 0.08025682182985554,
+      "accuracy": 1.0
+    }
+  ],
+  "best_validation": {
+    "variant": "raw",
+    "margin": 0.15,
+    "added": 412,
+    "added_pos": 77,
+    "added_neg": 335,
+    "val_accuracy": 0.8462
+  },
+  "best_raw_validation": {
+    "variant": "raw",
+    "margin": 0.15,
+    "added": 412,
+    "added_pos": 77,
+    "added_neg": 335,
+    "val_accuracy": 0.8462
+  },
+  "examples_added": {
+    "positive": [
+      "medal",
+      "academy",
+      "arts",
+      "honour",
+      "celebrating",
+      "notable",
+      "emmy",
+      "dedication",
+      "tribute",
+      "architect",
+      "art",
+      "devotion",
+      "scenery",
+      "artistic",
+      "oscar"
+    ],
+    "negative": [
+      "disasters",
+      "rapes",
+      "murdering",
+      "murders",
+      "killings",
+      "stabbing",
+      "bombing",
+      "crimes",
+      "theft",
+      "cow",
+      "sexist",
+      "shootings",
+      "homicide",
+      "robbery",
+      "sniper"
+    ]
+  },
+  "final": {
+    "baseline": {
+      "validation": {
+        "n": 5000,
+        "accuracy": 0.8346,
+        "pos": {
+          "precision": 0.8635375923511517,
+          "recall": 0.7948,
+          "f1": 0.8277442199541762
+        },
+        "neg": {
+          "precision": 0.8099296035568729,
+          "recall": 0.8744,
+          "f1": 0.8409309482592806
+        },
+        "macro_f1": 0.8343375841067284,
+        "confusion": [
+          [
+            2186,
+            314
+          ],
+          [
+            513,
+            1987
+          ]
+        ]
+      },
+      "test": {
+        "n": 25000,
+        "accuracy": 0.80848,
+        "pos": {
+          "precision": 0.854607320213353,
+          "recall": 0.74344,
+          "f1": 0.7951570120646873
+        },
+        "neg": {
+          "precision": 0.7729718250035396,
+          "recall": 0.87352,
+          "f1": 0.8201757680462706
+        },
+        "macro_f1": 0.8076663900554789,
+        "confusion": [
+          [
+            10919,
+            1581
+          ],
+          [
+            3207,
+            9293
+          ]
+        ]
+      }
+    },
+    "+hu_liu": {
+      "validation": {
+        "n": 5000,
+        "accuracy": 0.8448,
+        "pos": {
+          "precision": 0.8643279797125951,
+          "recall": 0.818,
+          "f1": 0.8405260994656802
+        },
+        "neg": {
+          "precision": 0.8272589217919514,
+          "recall": 0.8716,
+          "f1": 0.8488507985975847
+        },
+        "macro_f1": 0.8446884490316324,
+        "confusion": [
+          [
+            2179,
+            321
+          ],
+          [
+            455,
+            2045
+          ]
+        ]
+      },
+      "test": {
+        "n": 25000,
+        "accuracy": 0.82316,
+        "pos": {
+          "precision": 0.86218954541379,
+          "recall": 0.76928,
+          "f1": 0.8130892487210923
+        },
+        "neg": {
+          "precision": 0.7917238390987218,
+          "recall": 0.87704,
+          "f1": 0.8322010096026113
+        },
+        "macro_f1": 0.8226451291618518,
+        "confusion": [
+          [
+            10963,
+            1537
+          ],
+          [
+            2884,
+            9616
+          ]
+        ]
+      },
+      "marker_log_ratio": {
+        "LEX_POS": 0.348255228032218,
+        "LEX_NEG": -0.4031608236985105
+      }
+    },
+    "+expanded_raw_m0.15": {
+      "validation": {
+        "n": 5000,
+        "accuracy": 0.8462,
+        "pos": {
+          "precision": 0.8656527249683144,
+          "recall": 0.8196,
+          "f1": 0.8419971234846928
+        },
+        "neg": {
+          "precision": 0.8287124952525636,
+          "recall": 0.8728,
+          "f1": 0.850185076953049
+        },
+        "macro_f1": 0.8460911002188709,
+        "confusion": [
+          [
+            2182,
+            318
+          ],
+          [
+            451,
+            2049
+          ]
+        ]
+      },
+      "test": {
+        "n": 25000,
+        "accuracy": 0.82328,
+        "pos": {
+          "precision": 0.8623565279770444,
+          "recall": 0.76936,
+          "f1": 0.8132081853543041
+        },
+        "neg": {
+          "precision": 0.7918110918544194,
+          "recall": 0.8772,
+          "f1": 0.8323212388037043
+        },
+        "macro_f1": 0.8227647120790043,
+        "confusion": [
+          [
+            10965,
+            1535
+          ],
+          [
+            2883,
+            9617
+          ]
+        ]
+      },
+      "marker_log_ratio": {
+        "LEX_POS": 0.3477402643810845,
+        "LEX_NEG": -0.3802690606494621
+      }
+    }
+  }
+}

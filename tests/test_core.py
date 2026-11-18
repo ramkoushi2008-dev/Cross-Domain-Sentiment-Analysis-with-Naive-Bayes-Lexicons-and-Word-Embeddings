@@ -101,6 +101,38 @@ def test_parse_mpqa_line():
     assert e["word1"] == "abandoned" and e["priorpolarity"] == "negative"
 
 
+class _FakeKV:
+    """Tiny stand-in for gensim KeyedVectors with 2-d vectors."""
+    def __init__(self, vecs):
+        import numpy as np
+        self.vecs = {w: np.array(v, dtype=float) for w, v in vecs.items()}
+        self.key_to_index = {w: i for i, w in enumerate(vecs)}
+
+    def __getitem__(self, w):
+        return self.vecs[w]
+
+
+def test_expansion_gaps_margin_and_seed_priority():
+    from sentiment.expansion import compare_labels, expand, label_by_margin, polarity_gaps
+    kv = _FakeKV({"good": [1, 0], "great": [0.9, 0.1], "bad": [0, 1], "awful": [0.1, 0.9],
+                  "superb": [0.95, 0.05], "dreadful": [0.05, 0.95], "meh": [0.7, 0.7]})
+    seed = {"good": 1, "great": 1, "bad": -1, "awful": -1}
+    gaps = polarity_gaps(["superb", "dreadful", "meh"], seed, kv, k=2)
+    assert gaps["superb"] > 0.5 and gaps["dreadful"] < -0.5 and abs(gaps["meh"]) < 1e-6
+    assert label_by_margin(gaps, 0.1) == {"superb": 1, "dreadful": -1}  # "meh" left out
+    # seed labels always win over embedding labels
+    assert expand(seed, {"good": -0.9, "superb": 0.8}, 0.1) == {**seed, "superb": 1}
+    rows = compare_labels({"superb": 0.8, "dreadful": 0.2}, {"superb": 1, "dreadful": -1}, [0.0, 0.5])
+    assert rows[0]["accuracy"] == 0.5 and rows[1]["labelled"] == 1 and rows[1]["accuracy"] == 1.0
+
+
+def test_candidate_words_filters():
+    from sentiment.expansion import candidate_words
+    kv = _FakeKV({"plot": [1, 0], "good": [1, 0], "rare": [0, 1], "well-made": [1, 1], "!": [0, 1]})
+    counts = {"plot": 50, "good": 90, "rare": 3, "well-made": 25, "!": 900, "oov": 99}
+    assert candidate_words(counts, {"good": 1}, kv, min_count=20) == ["plot", "well-made"]
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

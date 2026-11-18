@@ -39,6 +39,7 @@ python scripts/reproduce_homework.py # check against Assignment 3 -> results/hom
 python scripts/dataset_stats.py      # sizes, class balance, text length -> results/dataset_stats.csv
 python scripts/run_baseline.py       # IMDB baseline -> results/baseline_imdb.json
 python scripts/run_lexicon_features.py  # + Hu & Liu / MPQA markers -> results/lexicon_features_imdb.json
+python scripts/run_expansion.py     # GloVe-expanded lexicon, margin tuned on validation -> results/expansion_*.json/csv
 python tests/test_core.py            # unit tests
 ```
 
@@ -73,7 +74,8 @@ must be placed in `data/raw/mpqa/` by hand after the request form.
 - [ ] Week 2 – Hu & Liu and MPQA lexicon features, GloVe-expanded lexicon
   - [x] Hu & Liu lexicon feature (LEX_POS / LEX_NEG markers), evaluated on IMDB
   - [x] MPQA loader (runs automatically once the lexicon file is in `data/raw/mpqa/`)
-  - [ ] GloVe-expanded lexicon with margin tuned on validation
+  - [x] GloVe-expanded lexicon with margin tuned on validation
+  - [ ] MPQA results and MPQA check of the expanded labels (waiting for the lexicon file)
 - [ ] Week 3 – negation methods, IMDB ablation, cross-domain tests
 - [ ] Week 4 – domain distances, word polarities, confidence intervals, significance tests
 - [ ] Week 5 – error analysis, agreement check, report
@@ -136,6 +138,45 @@ baseline's bias toward the negative class. The learned marker weights are modera
 lexicon words also occur in reviews of the opposite polarity, for example under negation
 ("not good"). Negation handling (Week 3) tests this directly.
 Whether the gains are significant is tested in Week 4 (McNemar).
+
+### GloVe-expanded lexicon (`results/expansion_imdb.json`, `results/expansion_tuning.csv`)
+
+Candidates are the 9,023 IMDB training words that occur at least 20 times, are missing
+from Hu & Liu and have a GloVe vector. Each gets a score: its mean cosine similarity to its
+10 nearest positive Hu & Liu words minus that to its 10 nearest negative words. Words
+whose |score| exceeds a margin are added to the lexicon with the sign of the score.
+
+**Label quality on known words.** Until the MPQA lexicon is available, the labels are
+checked by hiding 10% of the Hu & Liu words (623) and labelling them from the rest:
+
+| Margin | 0.00 | 0.02 | 0.04 | 0.06 | 0.10 | 0.15 |
+|---|---|---|---|---|---|---|
+| Held-out words labelled | 100% | 90% | 80% | 66% | 41% | 18% |
+| Accuracy of those labels | 0.894 | 0.938 | 0.956 | 0.988 | 0.996 | 1.000 |
+
+**Margin tuning on validation.** Two scoring variants were tuned over 9 margins each: the
+raw score (as proposed) and a centred score (raw minus the median over all candidates),
+added because the raw labels skew negative at larger margins (863 negative vs 400
+positive words at margin 0.10). All 18 settings fall between 0.8416 and 0.8462 validation
+accuracy, a spread of about one standard error on 5,000 reviews (±0.005), so no margin is
+clearly better. The best by validation is the raw score at margin 0.15 (412 words added:
+77 positive, 335 negative).
+
+| Model | Val acc | Test acc | Δ test vs baseline |
+|---|---|---|---|
+| Baseline | 0.8346 | 0.8085 | – |
+| + Hu & Liu | 0.8448 | 0.8232 | +1.47 |
+| + Hu & Liu expanded (raw, margin 0.15) | 0.8462 | 0.8233 | +1.48 |
+
+**Finding: the expansion adds almost nothing on IMDB.** The words it adds with the most
+confidence are topical rather than evaluative: positive *oscar, academy, tribute, medal,
+artistic*; negative *murders, bombing, theft, homicide, sniper* (`results/expanded_lexicon.csv`).
+GloVe similarity captures what a word is *about* (crime, awards) and its general
+connotation, not whether a reviewer liked the film; a crime film full of "murders" can be
+excellent. This also shows the held-out check above is optimistic: Hu & Liu words are
+already sentiment words, while most IMDB candidates are not. The MPQA comparison and the
+cross-domain tests (Week 3) will show whether these topical labels hurt or help outside
+movies.
 
 ### Preprocessing notes
 
