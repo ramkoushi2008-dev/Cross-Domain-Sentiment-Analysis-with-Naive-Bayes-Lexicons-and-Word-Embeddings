@@ -40,6 +40,7 @@ python scripts/dataset_stats.py      # sizes, class balance, text length -> resu
 python scripts/run_baseline.py       # IMDB baseline -> results/baseline_imdb.json
 python scripts/run_lexicon_features.py  # + Hu & Liu / MPQA markers -> results/lexicon_features_imdb.json
 python scripts/run_expansion.py     # GloVe-expanded lexicon, margin tuned on validation -> results/expansion_*.json/csv
+python scripts/run_negation.py      # three negation methods, k tuned on validation -> results/negation_*.json/csv
 python tests/test_core.py            # unit tests
 ```
 
@@ -77,6 +78,9 @@ must be placed in `data/raw/mpqa/` by hand after the request form.
   - [x] GloVe-expanded lexicon with margin tuned on validation
   - [ ] MPQA results and MPQA check of the expanded labels (waiting for the lexicon file)
 - [ ] Week 3 – negation methods, IMDB ablation, cross-domain tests
+  - [x] Three negation methods implemented and compared on IMDB (k tuned on validation)
+  - [ ] Combined model and full IMDB ablation
+  - [ ] Cross-domain tests on the target domains
 - [ ] Week 4 – domain distances, word polarities, confidence intervals, significance tests
 - [ ] Week 5 – error analysis, agreement check, report
 
@@ -177,6 +181,51 @@ excellent. This also shows the held-out check above is optimistic: Hu & Liu word
 already sentiment words, while most IMDB candidates are not. The MPQA comparison and the
 cross-domain tests (Week 3) will show whether these topical labels hurt or help outside
 movies.
+
+### Negation handling (`results/negation_imdb.json`, `results/negation_k_tuning.csv`)
+
+Negation cues are *not, no, never, n't, cannot*; a scope opens after a cue and closes at
+clause punctuation (`. , ; : ! ?`). In IMDB training reviews, 87% of reviews contain a
+negation scope and 8.7% of all tokens fall inside one (mean scope length 7.2 tokens,
+median 5).
+
+Three methods were compared, with every choice made on the validation set:
+
+1. **NOT_ to punctuation**: prefix `NOT_` to every word in the scope (Das & Chen, 2001; Pang et al., 2002).
+2. **NOT_ on the next k words**: k tuned over {1, 2, 3, 4, 5, 6, 8, 10}.
+3. **Lexicon flipping**: on top of the Hu & Liu model, a lexicon word inside the scope
+   produces the opposite marker ("not good" → `LEX_NEG`); its scope (to punctuation or
+   the best k) was also chosen on validation.
+
+| k (method 2) | 1 | **2** | 3 | 4 | 5 | 6 | 8 | 10 | to punct. |
+|---|---|---|---|---|---|---|---|---|---|
+| Val accuracy | 0.8414 | **0.8448** | 0.8410 | 0.8396 | 0.8386 | 0.8366 | 0.8344 | 0.8322 | 0.8292 |
+
+| Model | Val acc | Test acc | Δ test vs baseline |
+|---|---|---|---|
+| Baseline | 0.8346 | 0.8085 | – |
+| NOT_ to punctuation | 0.8292 | 0.8088 | +0.04 |
+| NOT_ next k = 2 | 0.8448 | 0.8168 | +0.83 |
+| + Hu & Liu | 0.8448 | 0.8232 | +1.47 |
+| + Hu & Liu, flipped in scope (k = 2) | 0.8470 | 0.8239 | +1.54 |
+
+**Findings.**
+- **Shorter scopes work better.** Validation accuracy falls steadily as k grows, and the
+  classic scope-to-punctuation method gives no gain at all. A likely reason: long scopes
+  rename many words that the negation does not actually affect ("n't think the *NOT_actors*…"), which
+  splits their counts between two features and makes both estimates noisier, while k = 2
+  covers the word a negation usually targets ("not good", "n't funny").
+- **Negation does not simply reverse polarity.** The most negative `NOT_` features include
+  `NOT_waste`, `NOT_worst`, `NOT_worth`, `NOT_redeeming` ("don't waste your time", "not
+  worth it", "no redeeming qualities"), and the most positive include `NOT_disappoint`,
+  `NOT_miss`, `NOT_perfect` ("won't disappoint", "don't miss it", "not perfect, but…").
+  `NOT_waste` and `NOT_worst` stay negative although the negated word is negative,
+  because these are fixed expressions. This is why the NOT_ methods, which learn each
+  negated word's polarity from data, are more flexible than flipping.
+- **Flipping adds little on top of the lexicon** (+0.07 points test). Lexicon words make
+  up 7.3% of tokens, and only those inside a short scope change, so few markers flip.
+- Significance of these differences is tested with McNemar's test in Week 4; the ones
+  under about half a point are likely within noise.
 
 ### Preprocessing notes
 

@@ -101,6 +101,30 @@ def test_parse_mpqa_line():
     assert e["word1"] == "abandoned" and e["priorpolarity"] == "negative"
 
 
+def test_negation_scope_and_not_prefix():
+    from sentiment.features import negate_words, negation_scope
+    toks = ["it", "was", "n't", "a", "good", "film", ",", "but", "fun", "."]
+    assert negation_scope(toks) == [False, False, False, True, True, True, False, False, False, False]
+    assert negate_words()(toks) == ["it", "was", "n't", "NOT_a", "NOT_good", "NOT_film",
+                                    ",", "but", "fun", "."]
+    # k words, still stopping at punctuation
+    assert negate_words(k=1)(toks)[3:6] == ["NOT_a", "good", "film"]
+    assert negate_words(k=5)(toks)[6:] == [",", "but", "fun", "."]
+    # "no" and "never" are cues; a new negator restarts the scope
+    assert negate_words(k=2)("no plot never ever again".split()) == \
+        ["no", "NOT_plot", "never", "NOT_ever", "NOT_again"]
+
+
+def test_flipped_lexicon_markers():
+    from sentiment.features import compose, lexicon_markers_flipped, negate_words, with_flipped_lexicon
+    lex = {"good": 1, "bad": -1}
+    toks = ["not", "good", ",", "not", "bad", ",", "good"]
+    assert lexicon_markers_flipped(toks, lex) == ["LEX_NEG", "LEX_POS", "LEX_POS"]
+    assert with_flipped_lexicon(lex)(toks) == toks + ["LEX_NEG", "LEX_POS", "LEX_POS"]
+    # composition: NOT_ marking then lexicon lookup sees NOT_good, so no marker for it
+    assert compose(negate_words(), None)(["not", "good"]) == ["not", "NOT_good"]
+
+
 class _FakeKV:
     """Tiny stand-in for gensim KeyedVectors with 2-d vectors."""
     def __init__(self, vecs):

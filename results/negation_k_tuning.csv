@@ -1,0 +1,12 @@
+method,scope,val_accuracy
+NOT_to_punct,punct,0.8292
+NOT_next_k,1,0.8414
+NOT_next_k,2,0.8448
+NOT_next_k,3,0.8410
+NOT_next_k,4,0.8396
+NOT_next_k,5,0.8386
+NOT_next_k,6,0.8366
+NOT_next_k,8,0.8344
+NOT_next_k,10,0.8322
+flip_lexicon,punct,0.8452
+flip_lexicon,2,0.8470
