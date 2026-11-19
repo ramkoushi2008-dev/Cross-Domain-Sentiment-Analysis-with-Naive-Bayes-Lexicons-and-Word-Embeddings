@@ -103,6 +103,18 @@ def with_flipped_lexicon(lexicon, name="LEX", k=None):
     return transform
 
 
+def combined(lexicon, k=2, name="LEX"):
+    """The combined model: lexicon markers (flipped inside negation scopes) computed on the
+    ORIGINAL tokens, then NOT_ marking of the words. The order matters: after NOT_
+    marking, "good" has become "NOT_good" and the lexicon would no longer find it."""
+    negate = negate_words(k)
+
+    def transform(tokens):
+        markers = lexicon_markers_flipped(tokens, lexicon, name, k)
+        return negate(tokens) + markers
+    return transform
+
+
 def compose(*transforms):
     """Apply token transforms left to right, skipping None."""
     def transform(tokens):

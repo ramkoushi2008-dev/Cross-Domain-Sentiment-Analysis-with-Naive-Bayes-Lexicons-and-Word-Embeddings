@@ -41,6 +41,7 @@ python scripts/run_baseline.py       # IMDB baseline -> results/baseline_imdb.js
 python scripts/run_lexicon_features.py  # + Hu & Liu / MPQA markers -> results/lexicon_features_imdb.json
 python scripts/run_expansion.py     # GloVe-expanded lexicon, margin tuned on validation -> results/expansion_*.json/csv
 python scripts/run_negation.py      # three negation methods, k tuned on validation -> results/negation_*.json/csv
+python scripts/run_ablation_crossdomain.py  # ablation + cross-domain tests -> results/accuracy_by_domain.csv etc.
 python tests/test_core.py            # unit tests
 ```
 
@@ -79,8 +80,8 @@ must be placed in `data/raw/mpqa/` by hand after the request form.
   - [ ] MPQA results and MPQA check of the expanded labels (waiting for the lexicon file)
 - [ ] Week 3 – negation methods, IMDB ablation, cross-domain tests
   - [x] Three negation methods implemented and compared on IMDB (k tuned on validation)
-  - [ ] Combined model and full IMDB ablation
-  - [ ] Cross-domain tests on the target domains
+  - [x] Combined model and full IMDB ablation
+  - [x] Cross-domain tests on the six available target domains
 - [ ] Week 4 – domain distances, word polarities, confidence intervals, significance tests
 - [ ] Week 5 – error analysis, agreement check, report
 
@@ -226,6 +227,58 @@ Three methods were compared, with every choice made on the validation set:
   up 7.3% of tokens, and only those inside a short scope change, so few markers flip.
 - Significance of these differences is tested with McNemar's test in Week 4; the ones
   under about half a point are likely within noise.
+
+### Feature ablation and cross-domain tests (`results/accuracy_by_domain.csv`, `results/delta_by_domain.csv`)
+
+All models are trained once on the 20,000 IMDB training reviews and tested on IMDB and
+on six target domains (balanced samples; Drugs.com unavailable, see above). Settings come
+from validation tuning: expansion margin 0.15, negation k = 2. **Combined** = GloVe-expanded
+Hu & Liu lexicon markers, flipped inside negation scopes and looked up on the original
+tokens, plus `NOT_` marking of the next 2 words. MPQA is not yet included.
+
+Accuracy:
+
+| Model | IMDB test | Books | DVD | Electronics | Kitchen | Yelp | FinPhrase | Mean (targets) |
+|---|---|---|---|---|---|---|---|---|
+| Baseline | 0.808 | 0.761 | 0.775 | 0.634 | 0.665 | 0.673 | 0.589 | 0.683 |
+| + Hu & Liu | 0.823 | 0.767 | 0.790 | 0.673 | 0.710 | 0.729 | 0.610 | 0.713 |
+| + Expanded | 0.823 | 0.768 | 0.792 | 0.674 | 0.708 | 0.732 | 0.609 | 0.714 |
+| NOT_ k = 2 | 0.817 | 0.780 | 0.790 | 0.655 | 0.696 | 0.691 | 0.593 | 0.701 |
+| + Hu & Liu, flipped | 0.824 | 0.777 | 0.794 | 0.681 | 0.719 | 0.732 | 0.613 | 0.719 |
+| **Combined** | **0.830** | **0.796** | **0.808** | **0.704** | **0.733** | **0.749** | **0.614** | **0.734** |
+
+Change vs baseline (percentage points):
+
+| Model | IMDB test | Books | DVD | Electronics | Kitchen | Yelp | FinPhrase |
+|---|---|---|---|---|---|---|---|
+| + Hu & Liu | +1.47 | +0.60 | +1.55 | +3.90 | +4.45 | +5.60 | +2.07 |
+| + Expanded | +1.48 | +0.70 | +1.75 | +3.95 | +4.25 | +5.90 | +1.99 |
+| NOT_ k = 2 | +0.83 | +1.90 | +1.50 | +2.10 | +3.10 | +1.75 | +0.33 |
+| + Hu & Liu, flipped | +1.54 | +1.55 | +1.95 | +4.65 | +5.40 | +5.85 | +2.32 |
+| Combined | +2.16 | +3.45 | +3.30 | +6.95 | +6.80 | +7.60 | +2.48 |
+
+**Preliminary findings (significance tests and domain distances follow in Week 4).**
+- **Every domain loses accuracy outside movies.** Relative to IMDB test, the baseline
+  loses 3.4 points on DVDs and 4.7 on books (the domains closest to movies), 13.5–17.4
+  on Yelp, kitchen and electronics, and 21.9 on financial news.
+- **Lexicon features transfer better than they help in-domain.** Hu & Liu adds +1.5
+  points on IMDB but +3.9 to +5.6 on electronics, kitchen and Yelp. A general-purpose
+  lexicon does not depend on movie vocabulary, so its value grows as the vocabulary
+  shifts. The GloVe expansion adds nothing beyond Hu & Liu in any domain.
+- **The baseline's errors outside movies are mostly missed positives.** Its positive
+  recall drops to 0.35 (electronics), 0.45 (kitchen) and 0.38 (Yelp), while negative
+  recall stays at 0.89–0.97. The combined model raises positive recall to 0.48 / 0.57 /
+  0.53, which accounts for most of its gain. Why the positive vocabulary of these domains
+  transfers worse than the negative one is a question for the Week 4 polarity comparison.
+- **Negation (NOT_ k = 2) helps most on books (+1.9)**, the domain with long, movie-like
+  reviews, and helps least on financial news (+0.3): only 1.0% of financial sentences contain a
+  negation, against 72–74% of book and Yelp reviews.
+- **The combined model is the best in every domain** and narrows the mean drop from
+  IMDB test to the targets from 12.6 to 9.6 points.
+- **Financial news stays near chance (0.59–0.61).** 10% of its tokens never occur in
+  IMDB training (1–3% for the other domains), and Hu & Liu words make up only 2.4% of its
+  tokens (6–7% elsewhere): financial sentiment is often carried by factual words such as
+  *profit*, *rose* or *decline*, which are not opinion words.
 
 ### Preprocessing notes
 

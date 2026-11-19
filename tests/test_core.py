@@ -125,6 +125,13 @@ def test_flipped_lexicon_markers():
     assert compose(negate_words(), None)(["not", "good"]) == ["not", "NOT_good"]
 
 
+def test_combined_looks_up_lexicon_before_not_marking():
+    from sentiment.features import combined
+    lex = {"good": 1, "boring": -1}
+    toks = ["not", "good", ",", "boring", "film"]
+    assert combined(lex, k=2)(toks) == ["not", "NOT_good", ",", "boring", "film", "LEX_NEG", "LEX_NEG"]
+
+
 class _FakeKV:
     """Tiny stand-in for gensim KeyedVectors with 2-d vectors."""
     def __init__(self, vecs):
